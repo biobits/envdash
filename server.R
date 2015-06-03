@@ -15,12 +15,19 @@ server <- function(input, output) {
   require(scales)
   require("sqldf")
   library(ggthemes)
+  library(RPostgreSQL)
   #datapath<-"c:/data/PiShared/data/"
   #   datapath<-"F:/PiShared/PiShared/data/"
- datapath<-"/srv/data/PiShared/data/"
+ #datapath<-"/srv/data/PiShared/data/"
+  #dbpath<-paste(datapath,"bighomedata.db",sep="")
+ options(sqldf.RPostgreSQL.user ="user", 
+         sqldf.RPostgreSQL.password ="pwd",
+         sqldf.RPostgreSQL.dbname ="env_measures",
+         sqldf.RPostgreSQL.host ="10.77.0.1", 
+         sqldf.RPostgreSQL.port =5432)
   
-  dbpath<-paste(datapath,"bighomedata.db",sep="")
-  loc<-sqldf("select idlocation,location from location",dbname = dbpath)
+  
+  loc<-sqldf("select idlocation,location from locations")#,dbname = dbpath)
    locations<-setNames(loc$idlocation,loc$location)
   output$choose_loc <- renderUI({
   selectInput("locations",choices=locations,label="Location",selected=3)})
@@ -30,8 +37,8 @@ server <- function(input, output) {
     datborder<-Sys.Date()-input$time_adjust
     
     locid<-ifelse(is.null(input$locations),1,input$locations) 
-    query<-paste("select * from messwerte where locationid= ",locid," and [timestamp] between '",as.character(datborder),"' and '",as.character(Sys.Date()+1),"'",sep="")
-    data2<-sqldf(query,dbname = dbpath)
+    query<-paste("select * from messwerte where locationid= ",locid," and timestamp between '",as.character(datborder),"' and '",as.character(Sys.Date()+1),"'",sep="")
+    data2<-sqldf(query)#,dbname = dbpath)
     data<-data2%>%mutate(date2=as.POSIXct(strptime(timestamp,"%Y-%m-%d %H:%M:%S")),col_temp=ifelse(temp<20,"palegreen3",ifelse(temp<=26,"goldenrod1","tomato1")))%>%arrange(desc(date2))
     
     
