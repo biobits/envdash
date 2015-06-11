@@ -16,12 +16,9 @@ server <- function(input, output) {
   require("sqldf")
   library(ggthemes)
   library(RPostgreSQL)
-  #datapath<-"c:/data/PiShared/data/"
-  #   datapath<-"F:/PiShared/PiShared/data/"
- #datapath<-"/srv/data/PiShared/data/"
-  #dbpath<-paste(datapath,"bighomedata.db",sep="")
- options(sqldf.RPostgreSQL.user ="user", 
-         sqldf.RPostgreSQL.password ="pwd",
+ 
+ options(sqldf.RPostgreSQL.user ="usr", 
+         sqldf.RPostgreSQL.password ="pass",
          sqldf.RPostgreSQL.dbname ="env_measures",
          sqldf.RPostgreSQL.host ="10.77.0.1", 
          sqldf.RPostgreSQL.port =5432)
@@ -33,8 +30,9 @@ server <- function(input, output) {
   selectInput("locations",choices=locations,label="Location",selected=3)})
   
   histdat<- reactive({
-  
-    datborder<-Sys.Date()-input$time_adjust
+    
+    t_slide<-ifelse(is.null(input$time_adjust),1,input$time_adjust)
+    datborder<-Sys.Date()-t_slide
     
     locid<-ifelse(is.null(input$locations),1,input$locations) 
     query<-paste("select * from messwerte where locationid= ",locid," and timestamp between '",as.character(datborder),"' and '",as.character(Sys.Date()+1),"'",sep="")
@@ -49,7 +47,8 @@ server <- function(input, output) {
   akt_dat<-reactive({
     
     data<-histdat()
-    locsub<-loc%>%filter(idlocation==as.numeric(input$locations))
+    locid<-ifelse(is.null(input$locations),1,input$locations) 
+    locsub<-loc%>%filter(idlocation==as.numeric(locid))
     data%>%top_n(1,date2)%>%mutate(location=paste(locsub$location),col_temp2=ifelse(temp<20,"green",ifelse(temp<=26,"yellow","red")))
     
   })
