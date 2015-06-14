@@ -76,7 +76,9 @@ server <- function(input, output) {
   output$plot_temp1<-renderPlot({
     data<-histdat()
     dbreak<-if(input$time_adjust<=2){"4 hours"}else{"1 day"}
-    ggplot(data,aes(date2,temp,color=col_temp))+geom_point()+scale_x_datetime(breaks = date_breaks(dbreak))+scale_colour_identity("temp", breaks=data$col_temp)
+    ggplot(data,aes(date2,temp,color=col_temp))+geom_point()+
+      scale_x_datetime(breaks = date_breaks(dbreak))+
+      scale_colour_identity("temp", breaks=data$col_temp)
     
     
   })

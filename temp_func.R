@@ -5,6 +5,7 @@ require("sqldf")
 library(ggthemes)
 library(ggvis)
 library(RPostgreSQL)
+library(zoo)
 
 options(sqldf.RPostgreSQL.user ="usr", 
         sqldf.RPostgreSQL.password ="pass",
@@ -45,20 +46,38 @@ testdat<-tdata%>%mutate(tag=as.Date(timestamp, format = '%d.%m.%Y',tz=""),ishot=
           select(tag,locationid,Anteil)
 
 
-testdat%>%filter(locationid==1)%>%ggvis(~as.character(tag),~Anteil, fill = ~locationid,opacity :=0.5)%>%
-  layer_bars()%>%add_axis("y", 'temp' , orient = "right", title= "Temperatur" , grid=F )
 
 
-sqldf("select * from tdata where sensorid=1 and strftime('%Y-%m-%d', timestamp)='2015-06-03'",drv="SQLite")
+## Verlauf
+data<-tdata%>%filter(locationid==1)%>%mutate(
+  col_temp=ifelse(temp<20,"palegreen3",ifelse(temp<=26,"goldenrod1","tomato1")))
+ggplot(data,aes(timestamp,temp))+,#color=col_temp))+
+  geom_polygon()+
+  scale_x_datetime(breaks = date_breaks("day"))+
+  scale_colour_identity("temp", breaks=data$col_temp)
 
-sqldf("select distinct strftime('%Y-%m-%d', t.timestamp) as tag,
-      (select min(timestamp) from tdata as t2 where 
-            strftime('%Y-%m-%d', t2.timestamp)=strftime('%Y-%m-%d', t.timestamp) and t2.temp>26.0) as mintime ,
-(select max(timestamp) from tdata as t2 where 
-            strftime('%Y-%m-%d', t2.timestamp)=strftime('%Y-%m-%d', t.timestamp) and t2.temp>26.0) as maxtime 
-      from tdata as t",drv="SQLite")
+## ANteil
+dat<-testdat%>%filter(locationid==1,Anteil>0)
 
-tdata%>%ggvis(~timestamp,~temp, fill = ~locationid,opacity :=0.5) %>% layer_points()
+
+ggplot(dat,aes(x=as.POSIXct(tag),y=Anteil,fill=ifelse(dat$Anteil>10,"darkred","darkgreen"),alpha=0.9))+
+  geom_bar(stat = "identity")+scale_x_datetime(breaks = date_breaks("day"))+
+  scale_fill_identity("Anteil", breaks=ifelse(dat$Anteil>10,"darkred","darkgreen"))
+
+
+# 
+# testdat%>%filter(locationid==1)%>%ggvis(~as.character(tag),~Anteil, fill = ~locationid,opacity :=0.5)%>%
+#   layer_bars()%>%add_axis("y", 'temp' , orient = "right", title= "Temperatur" , grid=F )
+# sqldf("select * from tdata where sensorid=1 and strftime('%Y-%m-%d', timestamp)='2015-06-03'",drv="SQLite")
+# 
+# sqldf("select distinct strftime('%Y-%m-%d', t.timestamp) as tag,
+#       (select min(timestamp) from tdata as t2 where 
+#             strftime('%Y-%m-%d', t2.timestamp)=strftime('%Y-%m-%d', t.timestamp) and t2.temp>26.0) as mintime ,
+# (select max(timestamp) from tdata as t2 where 
+#             strftime('%Y-%m-%d', t2.timestamp)=strftime('%Y-%m-%d', t.timestamp) and t2.temp>26.0) as maxtime 
+#       from tdata as t",drv="SQLite")
+# 
+# tdata%>%ggvis(~timestamp,~temp, fill = ~locationid,opacity :=0.5) %>% layer_points()
 
 
 
