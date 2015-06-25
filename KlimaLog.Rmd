@@ -1,0 +1,64 @@
+---
+title: "KlimaLog"
+output: html_document
+---
+
+
+
+```{r , echo=FALSE}
+require(ggplot2)
+require(dplyr)
+require(scales)
+require("sqldf")
+library(ggthemes)
+library(RPostgreSQL)
+
+options(sqldf.RPostgreSQL.user ="usr", 
+        sqldf.RPostgreSQL.password ="pass",
+        sqldf.RPostgreSQL.dbname ="env_measures",
+        sqldf.RPostgreSQL.host ="10.77.0.1", 
+        sqldf.RPostgreSQL.port =5432)
+
+query<-paste("select m.*,l.location from messwerte as m inner join locations l on m.locationid=l.idlocation ")
+data<-sqldf(query)
+data<-data%>%mutate(date2=as.POSIXct(strptime(timestamp,"%Y-%m-%d %H:%M:%S")),tag=as.POSIXct(strptime(timestamp,"%Y-%m-%d")),col_temp=ifelse(temp<20,"palegreen3",ifelse(temp<=26,"goldenrod1","tomato1")))%>%arrange((date2))
+
+ddtemp<-data%>%group_by(tag,location,locationid)%>%summarize(mt=mean(temp,na.rm = TRUE))
+
+mittemp<-read.csv("MittTemp.csv",header=TRUE,sep=";")
+mitt<-mittemp%>%mutate(Datum=as.POSIXct(strptime(Datum2,"%Y-%m-%d")))  
+```
+
+# Klimalog Schumacherstr. 49
+
+Zeitraum der Messung `r min(data$timestamp)` - `r max(data$timestamp)`. Anzahl der Messpunkte: 
+
+```{r, echo=FALSE}
+dbreak<-"2 weeks"
+    ggplot(data,aes(date2,temp,color=col_temp))+geom_point(aes(col=location))+
+      scale_x_datetime(breaks = date_breaks(dbreak))#+
+     # scale_colour_identity("temp", breaks=data$col_temp)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r, echo=FALSE}
+dbreak<-"2 weeks"
+    ggplot(data,aes(date2,temp,color=col_temp))+geom_point(aes(col=location))+
+      scale_x_datetime(breaks = date_breaks(dbreak))#+
+     # scale_colour_identity("temp", breaks=data$col_temp)
+    
+
+```
+
+## Verlauf der mittleren Aussentemperatur / Tag
+
+```{r, echo=FALSE}
+dbreak<-"1 week"
+    ggplot(mitt,aes(Datum,Wert))+geom_line(aes(col=Messstation))+
+      scale_x_datetime(breaks = date_breaks(dbreak))
+    #+
+     # scale_colour_identity("temp", breaks=data$col_temp)
+
+```
