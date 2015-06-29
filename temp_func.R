@@ -57,7 +57,7 @@ ggplot(data,aes(timestamp,temp))+,#color=col_temp))+
   scale_colour_identity("temp", breaks=data$col_temp)
 
 ## ANteil
-dat<-testdat%>%filter(locationid==1,Anteil>0)
+dat<-testdat%>%filter(locationid==1,tag>'2015-06-01')
 
 
 ggplot(dat,aes(x=as.POSIXct(tag),y=Anteil,fill=ifelse(dat$Anteil>10,"darkred","darkgreen"),alpha=0.9))+
