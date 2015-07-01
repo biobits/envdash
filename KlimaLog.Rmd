@@ -1,22 +1,25 @@
 ---
 title: "Klimalog Schumacherstr. 49 3. OG"
-output: pdf_document
+output:
+  html_document:
+    toc: true
+    theme: united
 ---
 
 
 
 ```{r  start, echo=FALSE,warning=FALSE,error=FALSE,comment=NA,results='hide',message=FALSE}
-require(ggplot2)
-require(dplyr)
-require(scales)
-require("sqldf")
+library(ggplot2)
+library(dplyr)
+library(scales)
+library("sqldf")
 library(ggthemes)
 library(RPostgreSQL)
 
 options(sqldf.RPostgreSQL.user ="usr", 
         sqldf.RPostgreSQL.password ="pass",
         sqldf.RPostgreSQL.dbname ="env_measures",
-        sqldf.RPostgreSQL.host ="192.168.2.211", 
+        sqldf.RPostgreSQL.host ="10.77.0.1", 
         sqldf.RPostgreSQL.port =5432)
 
 query<-paste("select m.*,l.location from messwerte as m inner join locations l on m.locationid=l.idlocation ")
@@ -28,7 +31,7 @@ ddtemp<-data%>%group_by(tag,location,locationid)%>%summarize(mt=mean(temp,na.rm 
 mittemp<-read.csv("MittTemp.csv",header=TRUE,sep=";")
 mitt<-mittemp%>%mutate(Datum=as.POSIXct(strptime(Datum2,"%Y-%m-%d")))  
 
-exempday<-"2015-06-13"
+exempday<-"2015-06-30"
 edd<-format(as.POSIXct(exempday), "%d.%m.%Y")
 
 #opts_chunk$set(fig.pos='H',dev=c('pdf','png'),comment = NA,echo=FALSE, warning=FALSE,message=FALSE) 

@@ -1,5 +1,5 @@
 require(ggplot2)
-require(dplyr)
+library(dplyr)
 require(scales)
 require("sqldf")
 library(ggthemes)
@@ -30,6 +30,19 @@ GetTempValues<-function(locids,startdate=NULL,enddate=NULL){
   return (sqldf(query))
   
 }
+
+
+## Aktuelle Tageswerte von HH Fuhlsbüttel als zip
+ham<-"ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/tageswerte_KL_01975_akt.zip"
+temp <- tempfile()
+download.file(ham,temp)
+zipFileInfo <- unzip(temp, list=TRUE)
+fname<-zipFileInfo%>%filter(grepl('produkt_klima_Tageswert', Name))%>%select(Name)
+fname[,1]
+hamdata <- read.csv(unz(temp, fname[,1]),sep=";")
+unlink(temp)
+hamdata<-hamdata%>%filter(MESS_DATUM>20150401)%>%select(MESS_DATUM,LUFTTEMPERATUR)
+
 
 
 tdata<-GetTempValues(c(1,2,3),startdate = '06.06.2015',enddate = NULL)
