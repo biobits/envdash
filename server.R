@@ -20,7 +20,7 @@ server <- function(input, output) {
  options(sqldf.RPostgreSQL.user ="usr", 
          sqldf.RPostgreSQL.password ="pass",
          sqldf.RPostgreSQL.dbname ="env_measures",
-         sqldf.RPostgreSQL.host ="10.77.0.1", 
+         sqldf.RPostgreSQL.host ="192.168.2.211", 
          sqldf.RPostgreSQL.port =5432)
   
   

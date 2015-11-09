@@ -9,9 +9,15 @@ library(RPostgreSQL)
 options(sqldf.RPostgreSQL.user ="usr", 
         sqldf.RPostgreSQL.password ="pass",
         sqldf.RPostgreSQL.dbname ="env_measures",
-        sqldf.RPostgreSQL.host ="10.77.0.1", 
+        sqldf.RPostgreSQL.host ="192.168.2.211", 
         sqldf.RPostgreSQL.port =5432)
 
+
+
+# Integral (AUC)
+AUC <- function(x, y){
+  sum(diff(x)*rollmean(y,2))
+}
 
 #loc<-sqldf("select idlocation,location from locations")#,dbname = dbpath)
 
@@ -41,7 +47,7 @@ fname<-zipFileInfo%>%filter(grepl('produkt_klima_Tageswert', Name))%>%select(Nam
 fname[,1]
 hamdata <- read.csv(unz(temp, fname[,1]),sep=";")
 unlink(temp)
-hdata<-hamdata%>%filter(MESS_DATUM>20150408)%>%mutate(Datum=as.POSIXct(strptime(MESS_DATUM,"%Y%m%d")))%>%
+hdata<-hamdata%>%filter(MESS_DATUM>20150414)%>%mutate(Datum=as.POSIXct(strptime(MESS_DATUM,"%Y%m%d")))%>%
   select(Datum,LUFTTEMPERATUR,SONNENSCHEINDAUER)
 return(hdata)
 }
