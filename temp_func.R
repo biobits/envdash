@@ -6,10 +6,10 @@ library(ggthemes)
 library(ggvis)
 library(RPostgreSQL)
 
-options(sqldf.RPostgreSQL.user ="usr", 
+options(sqldf.RPostgreSQL.user ="user", 
         sqldf.RPostgreSQL.password ="pass",
         sqldf.RPostgreSQL.dbname ="env_measures",
-        sqldf.RPostgreSQL.host ="192.168.2.211", 
+        sqldf.RPostgreSQL.host ="192.168.77.177", 
         sqldf.RPostgreSQL.port =5432)
 
 

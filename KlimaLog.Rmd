@@ -24,10 +24,12 @@ library(gridExtra)
 
 
 
-query<-paste("select m.*,l.location from messwerte as m inner join locations l on m.locationid=l.idlocation ")
+query<-paste("select m.*,l.location from messwerte as m inner join locations l on m.locationid=l.idlocation 
+              where timestamp  > timestamp '2016-03-01 00:00:00'
+              and timestamp < timestamp '2016-10-30 00:00:00';")
 data<-sqldf(query)
 data<-data%>%mutate(date2=as.POSIXct(strptime(timestamp,"%Y-%m-%d %H:%M:%S")), tag=as.POSIXct(strptime(timestamp,"%Y-%m-%d")),col_temp=ifelse(temp<20,"palegreen3",ifelse(temp<=26,"goldenrod1","tomato1")))%>%arrange((date2))
-data<-data%>%filter(tag>"2015-04-14",tag<"2015-10-30")
+#data<-data%>%filter(tag>"2016-04-14",tag<"2016-10-30")
 ddtemp<-data%>%group_by(tag,location,locationid)%>%summarize(mt=mean(temp,na.rm = TRUE))
 
 schlafdata<-data%>%filter(locationid==1,is.na(temp)==FALSE)
@@ -51,7 +53,7 @@ schlafAnteil <- schlafagg%>%filter(Anteil>10)%>%select(Monat=monat,Tag=tag,Antei
 
 mitt<-getHamData()
 
-exempday<-"2015-07-06"
+exempday<-"2016-05-29"
 edd<-format(as.POSIXct(exempday), "%d.%m.%Y")
 
 #opts_chunk$set(fig.pos='H',dev=c('pdf','png'),comment = NA,echo=FALSE, warning=FALSE,message=FALSE) 
@@ -159,7 +161,7 @@ testdat<-data%>%mutate(tag=as.Date(timestamp, format = '%d.%m.%Y',tz=""),monat=f
 
 ```{r IMGanteil,echo=FALSE,warning=FALSE,comment=NA}
 
-dat<-testdat%>%filter(locationid==1,monat>="06")
+dat<-testdat%>%filter(locationid==1,monat>="05")
 
 dbreak<-"1 week"
 ggplot(dat,aes(x=as.POSIXct(tag),y=Anteil,fill=ifelse(dat$Anteil>10,"darkred","darkgreen"),alpha=0.9))+
